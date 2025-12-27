@@ -1,9 +1,12 @@
 from tomlkit import parse, dumps, table #type: ignore
 from pathlib import Path
 from .util import send, select_option, create_empty_toml
+from typing import List
 import re
 
+
 class default:
+    @staticmethod
     async def script(message, subcommand, args):
         servers_file = Path('/mnt/game/default.toml')
 
@@ -68,7 +71,7 @@ class default:
 
             msg = []
             if added:
-                msg.append(f'Added: {", ".join([f"{n} (java={servers[n]['java_version']})" for n in added])}')
+                msg.append("Added: " + ", ".join([f'{n} (java={servers[n]["java_version"]})' for n in added]))
             if already:
                 msg.append(f'Already in list: {", ".join(already)}')
             await send.message('\n'.join(msg) if msg else 'No servers specified.', message)
@@ -94,7 +97,9 @@ class default:
         else:
             await send.message('Invalid subcommand or arguments for dsconf.', message)
 
-    async def main(command, message):
+
+    @staticmethod
+    async def main(command: List[str], message):
         if len(command) > 1:
             subcommand = command[1]
             args = command[2:]

@@ -34,7 +34,7 @@ async def download(args):
 
     # ダウンロードURLをチャットへ送信
     download_url = dl_url(dir_name)
-    send.message(f"Download URL: {download_url}")
+    await send.message(f"Download URL: {download_url}", None)
     
 
 def output_dir(dir_name):

@@ -1,5 +1,5 @@
 from pathlib import Path
-from tomlkit import parse #type: ignore
+from tomlkit import parse, table #type: ignore
 from .util import execute, system_messages, send, create_empty_toml
 from . import status as status_module
 import asyncio
@@ -10,15 +10,14 @@ def load_servers():
     if servers_file.exists():
         with servers_file.open('r', encoding='utf-8') as f:
             return parse(f.read())
-    else:  
+    else:
         create_empty_toml(servers_file)
-    return {}
+    return table()
 
-
-async def run_shell(message, server_dir):
-    run_sh = Path(f'/mnt/game/server/{server_dir}/run.sh')
+async def run_shell(message, server_name):
+    run_sh = Path(f'/mnt/game/server/{server_name}/run.sh')
+    backend_name = server_name + '_sv'
     if run_sh.exists():
-        backend_name = server_dir
         execute(f'tmux send-keys -t {backend_name} "source {run_sh}" ENTER')
         await send.message('Opening with run.sh', message)
         return True  # run.shで処理完了
@@ -27,14 +26,14 @@ async def run_shell(message, server_dir):
 async def server(message, server_name, status_val):
     servers = load_servers()
     backend_name = server_name + '_sv'
-    java_version = servers[server_name].get('java_version', '')
+    java_version = servers.get(server_name, {}).get('java_version', '')
     if status_val == 'running':
         await send.message(f'{server_name} is already running!', message)
         return
 
     execute(f'tmux new -s {backend_name} -d')
-    execute(f'tmux send-keys -t {backend_name} "cd /mnt/game/server/{backend_name}" ENTER')
-    used_run_sh = await run_shell(message, backend_name)
+    execute(f'tmux send-keys -t {backend_name} "cd /mnt/game/server/{server_name}" ENTER')
+    used_run_sh = await run_shell(message, server_name)
 
     if not used_run_sh:
         await send.message('Opening with jarFile', message)
@@ -43,8 +42,9 @@ async def server(message, server_name, status_val):
             execute(f'tmux send-keys -t {backend_name} "save-off" ENTER')
             await asyncio.sleep(2)
             output = status_module.tmux_output(backend_name)
-            if "Automatic saving is now disabled" in output:
+            if output and "Automatic saving is now disabled" in output:
                 await send.message(f'save-off was successfully executed for {server_name}', message)
+
         else:
             execute(f'tmux send-keys -t {backend_name} "java{java_version} -jar *.jar" ENTER')
 
@@ -69,20 +69,16 @@ async def all(message):
             await send.message(f'{server_name} is already running!', message)
         else:
             execute(f'tmux new -s {backend_name} -d')
-            execute(f'tmux send-keys -t {backend_name} "cd /mnt/game/server/{backend_name}" ENTER')
-            used_run_sh = await run_shell(message, backend_name)
+            execute(f'tmux send-keys -t {backend_name} "cd /mnt/game/server/{server_name}" ENTER')
+            used_run_sh = await run_shell(message, server_name)
             if not used_run_sh:
                 await send.message('Opening with jarFile', message)
-                if backend_name != 'proxy_sv':
-                    if server_name in servers:
-                        execute(f'tmux send-keys -t {backend_name} "java{java_version} -jar *.jar nogui" ENTER')
-                        execute(f'tmux send-keys -t {backend_name} "save-off" ENTER')
-                    else:
-                        execute(f'tmux send-keys -t {backend_name} "java -jar *.jar nogui" ENTER')
-                        execute(f'tmux send-keys -t {backend_name} "save-off" ENTER')
+                if server_name != 'proxy':
+                    execute(f'tmux send-keys -t {backend_name} "java{java_version} -jar *.jar nogui" ENTER')
+                    execute(f'tmux send-keys -t {backend_name} "save-off" ENTER')
                     await asyncio.sleep(2)
                     output = status_module.tmux_output(backend_name)
-                    if "Automatic saving is now disabled" in output:
+                    if output and "Automatic saving is now disabled" in output:
                         await send.message(f'{server_name} has been started!', message)
                 else:
                     execute(f'tmux send-keys -t {backend_name} "java{java_version} -jar *.jar" ENTER')
@@ -98,4 +94,4 @@ async def main(command, message):
         status_val = status_module.read(backend_name)
         await server(message, server_name, status_val)
     else:
-        await send.message(system_messages.get("Invalid command format for 'open'.", message))
+        await send.message(system_messages.get("invalid_open", "Invalid command format for 'open'"), message)

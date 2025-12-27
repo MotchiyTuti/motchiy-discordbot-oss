@@ -4,6 +4,9 @@ import subprocess
 import tomllib
 import random
 import os
+from typing import Any
+from typing import cast
+import discord  # type: ignore
 
 
 def execute(command):
@@ -11,9 +14,13 @@ def execute(command):
     subprocess.run(command, shell=True, check=True)
 
 
-def load_system_messages():
+def load_system_messages() -> dict[str, Any]:
     try:
-        message_toml = tomllib.load("message.toml")
+        p = Path("message.toml")
+        if not p.exists():
+            return {}
+        with p.open("rb") as f:
+            message_toml = tomllib.load(f)
         return message_toml.get("system", {})
     except Exception:
         return {}
@@ -42,12 +49,37 @@ def hasPermission(member, required_role):
 
 
 class send:
-    async def message(content, msg):
+    @staticmethod
+    async def message(content: str, message: discord.Message) -> None:
+        # content をコンソールに出力（デバッグ用）
         print(content)
-        if msg is None:
+        if message is None:
             return
-        await msg.channel.send(content)
-        
+
+        # 出力先を判別：Message オブジェクトなら channel、Channel/その他 send を持つオブジェクトならそれを使う
+        target = None
+        if hasattr(message, "channel"):
+            target = message.channel
+        elif hasattr(message, "send"):
+            target = message
+        # 一部の Interaction 等で response がある場合の対応
+        elif hasattr(message, "response") and hasattr(message.response, "send_message"):
+            target = message.response
+
+        if target is None:
+            # 送信先が見つからなければログだけ出して終了
+            print("No valid target to send message.")
+            return
+
+        # Discord のメッセージ最大長（約2000文字）に合わせて分割して送信
+        MAX_LEN = 2000
+        try:
+            for i in range(0, len(content), MAX_LEN):
+                chunk = content[i:i + MAX_LEN]
+                await target.send(chunk)
+        except Exception as e:
+            # 送信失敗時はログに出す（必要ならここで再試行や詳細ログを追加）
+            print(f"Failed to send message: {e}")
 
 
 def select_option(items):

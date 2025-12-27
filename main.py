@@ -8,6 +8,7 @@ import traceback
 # Discordクライアント初期化
 intents = discord.Intents.default()
 intents.message_content = True
+
 client = discord.Client(intents=intents)
 
 
@@ -30,7 +31,7 @@ async def on_message(message):
 
     command = content[1:].split()
     if len(command) < 1:
-        await send.message("Invalid command format.", message)
+        await send.message(str("Invalid command format."), message)
         return
 
     action = command[0]
@@ -41,15 +42,15 @@ async def on_message(message):
         if len(command) < 2:
             # 引数がない場合は送信者自身の権限を表示
             perm = get_permission(message.author)
-            await send.message(f"{message.author.display_name} の権限: {perm}", message)
+            await send.message(str(f"{message.author.display_name} の権限: {perm}"), message)
             return
         name = command[1]
         member = discord.utils.find(lambda m: m.name == name or m.display_name == name, message.guild.members)
         if member is None:
-            await send.message(f"ユーザー '{name}' が見つかりません。", message)
+            await send.message(str(f"ユーザー '{name}' が見つかりません。"), message)
             return
         perm = get_permission(member)
-        await send.message(f"{member.display_name} の権限: {perm}", message)
+        await send.message(str(f"{member.display_name} の権限: {perm}"), message)
         return
 
     try:
@@ -63,10 +64,7 @@ async def on_message(message):
 
         # staff commands
         if hasPermission(message.author, 'staff'):
-            if action == 'jobsconf':
-                await config.jobs.main(message, roles)
-                return
-            elif action == 'yt-dlp':
+            if action == 'yt-dlp':
                 await yt_dlp.download(command[1:])
                 return
 
@@ -86,7 +84,7 @@ async def on_message(message):
                 return
 
         # 権限不足
-        await send.message("You do not have permission.", message)
+        await send.message(str("You do not have permission."), message)
 
     except Exception as e:
         tb = traceback.extract_tb(e.__traceback__)
@@ -95,7 +93,7 @@ async def on_message(message):
             file_info = f'File \"{last.filename}\", line {last.lineno}'
         else:
             file_info = "No traceback info"
-        await send.message(f'Error: {e}\n{file_info}', message)
+        await send.message(str(f'Error: {e}\n{file_info}'), message)
         
 def run_bot():
     token_file = Path('token.txt')

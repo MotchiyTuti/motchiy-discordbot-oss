@@ -8,10 +8,23 @@ async def server(message, server_name, status, command):
     if status == 'waiting':
         await send.message(f'{server_name} is already stopped!', message)
         return
+    backend_name = server_name + '_sv'
     close_command = 'end' if '-p' in command else 'stop'
-    execute(f'tmux send-keys -t {server_name} "{close_command}" ENTER')
-    execute(f'tmux kill-session -t {server_name}')
-    await send.message(f'{server_name} has been stopped!', message)
+
+    try:
+        # セッションが存在するか先に確認
+        check = subprocess.run(f'tmux has-session -t {backend_name}', shell=True, capture_output=True, text=True)
+        if check.returncode != 0:
+            await send.message(f'No TMUX session named `{backend_name}` found. ({server_name} is not running)', message)
+            return
+
+        execute(f'tmux send-keys -t {backend_name} "{close_command}" ENTER')
+        execute(f'tmux kill-session -t {backend_name}')
+        await send.message(f'{server_name} has been stopped!', message)
+    except subprocess.CalledProcessError as e:
+        await send.message(f'Failed to stop `{backend_name}`: {e}', message)
+    except Exception as e:
+        await send.message(f'An unexpected error occurred while closing `{backend_name}`: {e}', message)
 
 async def all(message):
     # 'close all' コマンドを処理
