@@ -37,16 +37,24 @@ async def main(command, message):
     # Download attachments
     for attachment in target_message.attachments:
         # Save the file with its original name
-        original_filename = attachment.filename
-        safe_filename = original_filename.encode("utf-8", "ignore").decode("utf-8")
-        file_path = download_dir / safe_filename
+        filename = attachment.filename
+        file_path = download_dir / filename
         await attachment.save(file_path)
+
+    for file in download_dir.iterdir():
+        print("DEBUG:", file.name)
+        print("ORIGINAL:", repr(attachment.filename))
+
 
     # Create a ZIP file
     zip_path = download_dir.with_suffix(".zip")
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
         for file in download_dir.iterdir():
-            zipf.write(file, arcname=file.name)
+            info = zipfile.ZipInfo(file.name)
+            info.flag_bits |= 0x800  # UTF-8 フラグを立てる
+            with open(file, "rb") as f:
+                zipf.writestr(info, f.read())
+
 
     # Send the download link
     public_url = f"https://motchiy.f5.si/discord-downloads/{message_id}.zip"
