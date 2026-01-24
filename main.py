@@ -1,5 +1,5 @@
 import discord  # type: ignore
-from src import close, open, config, help, status, yt_dlp, auth
+from src import close, open, config, help, status, auth, download
 from src.util import hasPermission, send, get_permission
 from pathlib import Path
 import traceback
@@ -63,8 +63,8 @@ async def on_message(message):
 
         # staff commands
         if hasPermission(message.author, 'staff'):
-            if action == 'yt-dlp':
-                await yt_dlp.download(command[1:])
+            if action == 'dl':
+                await download.main(command, message)
                 return
 
         # mod commands

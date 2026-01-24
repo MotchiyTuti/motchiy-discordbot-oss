@@ -1,4 +1,4 @@
-#!/opt/discordbot/.venv/bin/python3
+#!/home/motchiy/discordbot/.venv/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys
