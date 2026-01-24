@@ -39,7 +39,6 @@ async def server(message, server_name, status_val):
         await send.message('Opening with jarFile', message)
         if server_name != 'proxy':
             execute(f'tmux send-keys -t {backend_name} "java{java_version} -jar *.jar nogui" ENTER')
-            execute(f'tmux send-keys -t {backend_name} "save-off" ENTER')
             await asyncio.sleep(2)
             output = status_module.tmux_output(backend_name)
             if output and "Automatic saving is now disabled" in output:
@@ -69,7 +68,7 @@ async def all(message):
             await send.message(f'{server_name} is already running!', message)
         else:
             execute(f'tmux new -s {backend_name} -d')
-            execute(f'tmux send-keys -t {backend_name} "cd /mnt/game/server/{server_name}" ENTER')
+            execute(f'tmux send-keys -t {backend_name} "cd /mnt/game/server/{backend_name}" ENTER')  # changed to use *_sv directory
             used_run_sh = await run_shell(message, server_name)
             if not used_run_sh:
                 await send.message('Opening with jarFile', message)
