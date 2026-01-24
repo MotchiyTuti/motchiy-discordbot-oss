@@ -6,7 +6,7 @@ import asyncio
 
 # TOMLファイルの読み込み（存在しない場合は空の table を返す）
 def load_servers():
-    servers_file = Path('/mnt/game/default.toml')
+    servers_file = Path('/mnt/game/settings.toml')
     if servers_file.exists():
         with servers_file.open('r', encoding='utf-8') as f:
             return parse(f.read())
@@ -15,7 +15,7 @@ def load_servers():
     return table()
 
 async def run_shell(message, server_name):
-    run_sh = Path(f'/mnt/game/server/{server_name}/run.sh')
+    run_sh = Path(f'/mnt/game/server/{server_name}_sv/run.sh')  # changed to use *_sv directory
     backend_name = server_name + '_sv'
     if run_sh.exists():
         execute(f'tmux send-keys -t {backend_name} "source {run_sh}" ENTER')
@@ -32,7 +32,7 @@ async def server(message, server_name, status_val):
         return
 
     execute(f'tmux new -s {backend_name} -d')
-    execute(f'tmux send-keys -t {backend_name} "cd /mnt/game/server/{server_name}" ENTER')
+    execute(f'tmux send-keys -t {backend_name} "cd /mnt/game/server/{backend_name}" ENTER')  # changed to use *_sv directory
     used_run_sh = await run_shell(message, server_name)
 
     if not used_run_sh:
@@ -74,7 +74,6 @@ async def all(message):
                 await send.message('Opening with jarFile', message)
                 if server_name != 'proxy':
                     execute(f'tmux send-keys -t {backend_name} "java{java_version} -jar *.jar nogui" ENTER')
-                    execute(f'tmux send-keys -t {backend_name} "save-off" ENTER')
                     await asyncio.sleep(2)
                     output = status_module.tmux_output(backend_name)
                     if output and "Automatic saving is now disabled" in output:

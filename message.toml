@@ -59,6 +59,18 @@ help = """
 - Example: `!help open`
 """
 
+allow = """
+**!allow <username>**
+- Add the specified username to the whitelist.
+- Example: `!allow player1`
+"""
+
+deny = """
+**!deny <username>**
+- Remove the specified username from the whitelist.
+- Example: `!deny player1`
+"""
+
 admin_list = """
 **Available commands:**
 - `!open all/<server_name>`: Start servers.

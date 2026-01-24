@@ -1,5 +1,5 @@
 import discord  # type: ignore
-from src import close, open, config, help, status, yt_dlp
+from src import close, open, config, help, status, yt_dlp, auth
 from src.util import hasPermission, send, get_permission
 from pathlib import Path
 import traceback
@@ -35,7 +35,6 @@ async def on_message(message):
         return
 
     action = command[0]
-    roles = {role.name for role in message.author.roles}
 
     # !perm コマンド処理
     if action == 'perm':
@@ -76,6 +75,12 @@ async def on_message(message):
             elif action == 'close':
                 await close.main(command, message)
                 return
+            elif action == 'allow':
+                await auth.allow(message, *command[1:])
+                return
+            elif action == 'deny':
+                await auth.deny(message, *command[1:])
+                return
 
         # admin commands
         if hasPermission(message.author, 'admin'):
@@ -83,8 +88,8 @@ async def on_message(message):
                 await config.default.main(command, message)
                 return
 
-        # 権限不足
-        await send.message(str("You do not have permission."), message)
+        # 権限不足または不明なコマンド
+        await send.message(str("You do not have permission or the command is invalid."), message)
 
     except Exception as e:
         tb = traceback.extract_tb(e.__traceback__)

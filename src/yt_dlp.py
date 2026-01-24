@@ -21,7 +21,7 @@ async def download(args):
         elif mode_type == "audio_video":
             download_youtube_as_mp4(text, output)
 
-    # options‚Ì“à—e‚Å•ªŠò
+    # optionsã®å†…å®¹ã§åˆ†å²
     if 'audio' in options:
         mode = "audio_lite" if 'lite' in options else "audio"
     elif 'video' in options:
@@ -32,7 +32,7 @@ async def download(args):
     for line in url:
         _download(mode, line.strip(), out_dir)
 
-    # ƒ_ƒEƒ“ƒ[ƒhURL‚ğƒ`ƒƒƒbƒg‚Ö‘—M
+    # ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰URLã‚’ãƒãƒ£ãƒƒãƒˆã¸é€ä¿¡
     download_url = dl_url(dir_name)
     await send.message(f"Download URL: {download_url}", None)
     
