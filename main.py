@@ -1,5 +1,5 @@
 import discord  # type: ignore
-from discordbot.src import start, stop
+from src import start, stop
 from src import config, help, status, auth, download
 from src.util import hasPermission, send, get_permission
 from pathlib import Path
