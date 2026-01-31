@@ -1,5 +1,6 @@
 import discord  # type: ignore
-from src import close, open, config, help, status, auth, download
+from discordbot.src import start, stop
+from src import config, help, status, auth, download
 from src.util import hasPermission, send, get_permission
 from pathlib import Path
 import traceback
@@ -70,10 +71,10 @@ async def on_message(message):
         # mod commands
         if hasPermission(message.author, 'mod'):
             if action == 'open':
-                await open.main(command, message)
+                await start.main(command, message)
                 return
             elif action == 'close':
-                await close.main(command, message)
+                await stop.main(command, message)
                 return
             elif action == 'allow':
                 await auth.allow(message, *command[1:])

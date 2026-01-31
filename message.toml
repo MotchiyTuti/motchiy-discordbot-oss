@@ -1,22 +1,22 @@
 [help]
-open = """
-**!open <server_name>**
+start = """
+**!start <server_name>**
 - Start the specified server.
-- Example: `!open my_server`
+- Example: `!start my_server`
 
-**!open all**
+**!start all**
 - Start all servers listed in `default.pkl`.
-- Example: `!open all`
+- Example: `!start all`
 """
 
-close = """
-**!close <server_name>**
+stop = """
+**!stop <server_name>**
 - Stop the specified server.
-- Example: `!close my_server`
+- Example: `!stop my_server`
 
-**!close all**
+**!stop all**
 - Stop all running servers.
-- Example: `!close all`
+- Example: `!stop all`
 """
 
 status = """
@@ -56,7 +56,7 @@ help = """
 
 **!help <command>**
 - Show detailed help for a specific command.
-- Example: `!help open`
+- Example: `!help start`
 """
 
 allow = """
@@ -73,8 +73,8 @@ deny = """
 
 admin_list = """
 **Available commands:**
-- `!open all/<server_name>`: Start servers.
-- `!close all/<server_name>`: Stop servers.
+- `!start all/<server_name>`: Start servers.
+- `!stop all/<server_name>`: Stop servers.
 - `!status ls/<server_name>`: Check server status.
 - `!jobsconf`: Reload Jobs plugin.
 - `!dsconf ls/add/rem <server_name>`: Manage server list.
@@ -84,8 +84,8 @@ admin_list = """
 
 user_list = """
 **Available commands:**
-- `!open all/<server_name>`: Start servers.
-- `!close all/<server_name>`: Stop servers.
+- `!start all/<server_name>`: Start servers.
+- `!stop all/<server_name>`: Stop servers.
 - `!status ls/<server_name>`: Check server status.
 - `!help`: Show help.
 - `!help <command>`: Show detailed help for a command.
@@ -94,8 +94,8 @@ user_list = """
 [system]
 no_permission = "権限がありません"
 processing = "処理中..."
-invalid_close = "closeコマンドの形式が不正です"
-invalid_open = "openコマンドの形式が不正です"
+invalid_stop = "stopコマンドの形式が不正です"
+invalid_start = "startコマンドの形式が不正です"
 invalid_status = "statusコマンドの形式が不正です"
 economy_waiting = "Economyサーバーが起動していません"
 jobs_configured = "Jobs rebornの設定が完了しました"

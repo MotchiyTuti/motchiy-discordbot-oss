@@ -53,6 +53,7 @@ async def main(command, message):
         server_name = command[1]
         backend_name = server_name + '_sv'
         status_val = status.read(backend_name)
-        await server(message, server_name, status_val, command)
+        if command[0] == 'stop':
+            await server(message, server_name, status_val, command)
     else:
         await send.message(system_messages.get("invalid_close", "Invalid command format for 'close'"), message)

@@ -83,13 +83,29 @@ async def all(message):
 
     await send.message('All servers from default.toml have been started.', message)
 
+async def restart(message, server_name):
+    backend_name = server_name + '_sv'
+    status_val = status_module.read(backend_name)
+
+    if status_val == 'running':
+        # Stop the server first
+        execute(f'tmux send-keys -t {backend_name} "stop" ENTER')
+        execute(f'tmux kill-session -t {backend_name}')
+        await asyncio.sleep(2)  # Wait for the server to stop
+
+    # Start the server again
+    await server(message, server_name, 'stopped')
+
 async def main(command, message):
     if len(command) > 1 and command[1] == 'all':
         await all(message)
     elif len(command) > 1:
         server_name = command[1]
-        backend_name = server_name + '_sv'
-        status_val = status_module.read(backend_name)
-        await server(message, server_name, status_val)
+        if command[0] == 'start':
+            backend_name = server_name + '_sv'
+            status_val = status_module.read(backend_name)
+            await server(message, server_name, status_val)
+        elif command[0] == 'restart':
+            await restart(message, server_name)
     else:
         await send.message(system_messages.get("invalid_open", "Invalid command format for 'open'"), message)
