@@ -70,10 +70,10 @@ async def on_message(message):
 
         # mod commands
         if hasPermission(message.author, 'mod'):
-            if action == 'open':
+            if action == 'start':
                 await start.main(command, message)
                 return
-            elif action == 'close':
+            elif action == 'stop':
                 await stop.main(command, message)
                 return
             elif action == 'allow':
