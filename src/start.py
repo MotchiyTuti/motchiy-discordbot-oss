@@ -50,14 +50,14 @@ async def server(message, server_name, status_val):
     await send.message(f'{server_name} has been started!', message)
 
 async def all(message):
-    servers_file = Path('/mnt/game/default.toml')
+    servers_file = Path('/mnt/game/settings.toml')
     if not servers_file.exists():
-        await send.message('default.toml not found. Please add servers to it.', message)
+        await send.message('settings.toml not found. Please add servers to it.', message)
         return
 
     servers = load_servers()
     if not servers:
-        await send.message('No servers found in default.toml.', message)
+        await send.message('No servers found in settings.toml.', message)
         return
 
     for server_name in servers:
@@ -81,7 +81,7 @@ async def all(message):
                 else:
                     execute(f'tmux send-keys -t {backend_name} "java{java_version} -jar *.jar" ENTER')
 
-    await send.message('All servers from default.toml have been started.', message)
+    await send.message('All servers from settings.toml have been started.', message)
 
 async def restart(message, server_name):
     backend_name = server_name + '_sv'
