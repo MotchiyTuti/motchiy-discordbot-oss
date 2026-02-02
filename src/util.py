@@ -1,5 +1,5 @@
 from pathlib import Path
-from tomlkit import table, dumps #type: ignore
+from tomlkit import table, dumps, parse #type: ignore
 import subprocess
 import tomllib
 import random
@@ -104,3 +104,13 @@ def create_empty_toml(path: Path):
     empty_data = table()
     with path.open('w', encoding='utf-8') as f:
         f.write(dumps(empty_data))
+
+
+def load_settings():
+    settings_file = Path("settings.toml")
+    if not settings_file.exists():
+        raise FileNotFoundError("settings.toml not found.")
+    with settings_file.open("r", encoding="utf-8") as f:
+        return parse(f.read())
+
+settings = load_settings()

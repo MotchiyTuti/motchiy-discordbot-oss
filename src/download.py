@@ -1,8 +1,7 @@
-import discord
-import os
+import discord # type: ignore
 import zipfile
 from pathlib import Path
-from src.util import send
+from src.util import send, settings
 
 async def main(command, message):
     if len(command) < 2:
@@ -24,7 +23,7 @@ async def main(command, message):
         return
 
     # Create a directory for saving files
-    download_dir = Path("/var/www/html/discord-downloads") / str(message_id)
+    download_dir = Path(settings['paths']['download_dir']) / str(message_id)
     download_dir.mkdir(parents=True, exist_ok=True)
 
     # Save the message content to an md file

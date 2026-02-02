@@ -1,11 +1,11 @@
-from .util import system_messages, send
+from .util import system_messages, send, settings
 import subprocess
 
 
 def read(server_name):
     # TMUXセッションに同名があれば'running'、なければ'waiting'を返す
     try:
-        result = subprocess.run("tmux list-sessions -F '#S'", shell=True, capture_output=True, text=True)
+        result = subprocess.run(f"{settings['paths']['tmux_executable']} list-sessions -F '#S'", shell=True, capture_output=True, text=True)
         sessions = result.stdout.strip().split('\n')
         sessions = [s for s in sessions if s]
         filtered_sessions = [s for s in sessions if s.endswith('_sv')]
@@ -38,7 +38,7 @@ async def server(message, server_name, status_val):
 async def list(message):
     # 'status ls' コマンドを処理
     try:
-        result = subprocess.run("tmux list-sessions -F '#S'", shell=True, capture_output=True, text=True)
+        result = subprocess.run(f"{settings['paths']['tmux_executable']} list-sessions -F '#S'", shell=True, capture_output=True, text=True)
         sessions = result.stdout.strip().split('\n')
         sessions = [s for s in sessions if s]
         filtered = [s for s in sessions if s.endswith('_sv')]

@@ -1,12 +1,12 @@
 from pathlib import Path
 from tomlkit import parse, table #type: ignore
-from .util import execute, system_messages, send, create_empty_toml
+from .util import execute, system_messages, send, create_empty_toml, settings
 from . import status as status_module
 import asyncio
 
 # TOMLファイルの読み込み（存在しない場合は空の table を返す）
 def load_servers():
-    servers_file = Path('/mnt/game/settings.toml')
+    servers_file = Path(settings['paths']['settings_file'])
     if servers_file.exists():
         with servers_file.open('r', encoding='utf-8') as f:
             return parse(f.read())
@@ -15,7 +15,7 @@ def load_servers():
     return table()
 
 async def run_shell(message, server_name):
-    run_sh = Path(f'/mnt/game/server/{server_name}_sv/run.sh')  # changed to use *_sv directory
+    run_sh = Path(f"{settings['paths']['server_base_dir']}/{server_name}_sv/run.sh")
     backend_name = server_name + '_sv'
     if run_sh.exists():
         execute(f'tmux send-keys -t {backend_name} "source {run_sh}" ENTER')
@@ -32,7 +32,7 @@ async def server(message, server_name, status_val):
         return
 
     execute(f'tmux new -s {backend_name} -d')
-    execute(f'tmux send-keys -t {backend_name} "cd /mnt/game/server/{backend_name}" ENTER')  # changed to use *_sv directory
+    execute(f'tmux send-keys -t {backend_name} "cd {settings["paths"]["game_base_dir"]}/{backend_name}" ENTER')
     used_run_sh = await run_shell(message, server_name)
 
     if not used_run_sh:
@@ -50,14 +50,14 @@ async def server(message, server_name, status_val):
     await send.message(f'{server_name} has been started!', message)
 
 async def all(message):
-    servers_file = Path('/mnt/game/settings.toml')
+    servers_file = Path(settings['paths']['servers_file'])
     if not servers_file.exists():
-        await send.message('settings.toml not found. Please add servers to it.', message)
+        await send.message('servers.toml not found. Please add servers to it.', message)
         return
 
     servers = load_servers()
     if not servers:
-        await send.message('No servers found in settings.toml.', message)
+        await send.message('No servers found in servers.toml.', message)
         return
 
     for server_name in servers:
@@ -68,7 +68,7 @@ async def all(message):
             await send.message(f'{server_name} is already running!', message)
         else:
             execute(f'tmux new -s {backend_name} -d')
-            execute(f'tmux send-keys -t {backend_name} "cd /mnt/game/server/{backend_name}" ENTER')  # changed to use *_sv directory
+            execute(f'tmux send-keys -t {backend_name} "cd {settings["paths"]["server_base_dir"]}/{backend_name}" ENTER')
             used_run_sh = await run_shell(message, server_name)
             if not used_run_sh:
                 await send.message('Opening with jarFile', message)

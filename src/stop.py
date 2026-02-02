@@ -1,5 +1,5 @@
 from . import status
-from .util import execute, system_messages, send
+from .util import execute, system_messages, send, settings
 import subprocess
 
 
@@ -29,7 +29,7 @@ async def server(message, server_name, status, command):
 async def all(message):
     # 'close all' コマンドを処理
     try:
-        result = subprocess.run("tmux list-sessions -F '#S'", shell=True, capture_output=True, text=True)
+        result = subprocess.run(f"{settings['paths']['tmux_executable']} list-sessions -F '#S'", shell=True, capture_output=True, text=True)
         sessions = result.stdout.strip().split('\n')
         filtered_sessions = [s for s in sessions if s.endswith('_sv')]
 
@@ -38,9 +38,9 @@ async def all(message):
             return
 
         for session in filtered_sessions:
-            execute(f'tmux send-keys -t {session} "stop" ENTER')
-            execute(f'tmux send-keys -t {session} "end" ENTER')
-            execute(f'tmux kill-session -t {session}')
+            execute(f"{settings['paths']['tmux_executable']} send-keys -t {session} \"stop\" ENTER")
+            execute(f"{settings['paths']['tmux_executable']} send-keys -t {session} \"end\" ENTER")
+            execute(f"{settings['paths']['tmux_executable']} kill-session -t {session}")
 
         await send.message('All target TMUX sessions have been stopped and killed.', message)
     except Exception as e:
