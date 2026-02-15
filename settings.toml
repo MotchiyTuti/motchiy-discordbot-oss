@@ -17,6 +17,7 @@ log_file = "/var/log/discordbot.log"
 # Path to the tmux executable
 tmux_executable = "tmux"
 
+# Path to the MySQL configuration TOML file
 mysql_toml = "/home/motchiy/discordbot/mysql.toml"
 
 [channel_ids]

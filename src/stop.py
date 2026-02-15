@@ -4,7 +4,6 @@ import subprocess
 
 
 async def server(message, server_name, status, command):
-    # 'close' コマンドを処理
     if status == 'waiting':
         await send.message(f'{server_name} is already stopped!', message)
         return
@@ -12,7 +11,6 @@ async def server(message, server_name, status, command):
     close_command = 'end' if '-p' in command else 'stop'
 
     try:
-        # セッションが存在するか先に確認
         check = subprocess.run(f'tmux has-session -t {backend_name}', shell=True, capture_output=True, text=True)
         if check.returncode != 0:
             await send.message(f'No TMUX session named `{backend_name}` found. ({server_name} is not running)', message)
@@ -27,7 +25,6 @@ async def server(message, server_name, status, command):
         await send.message(f'An unexpected error occurred while closing `{backend_name}`: {e}', message)
 
 async def all(message):
-    # 'close all' コマンドを処理
     try:
         result = subprocess.run(f"{settings['paths']['tmux_executable']} list-sessions -F '#S'", shell=True, capture_output=True, text=True)
         sessions = result.stdout.strip().split('\n')

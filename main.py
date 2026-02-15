@@ -5,10 +5,10 @@ from src.util import hasPermission, send, get_permission, load_settings
 from pathlib import Path
 import traceback
 import pymysql # type: ignore
-import tomllib  # Ensure tomllib is imported for configuration loading
+import tomllib
+import os
 
 
-# Discordクライアント初期化
 intents = discord.Intents.default()
 intents.message_content = True
 
@@ -17,9 +17,7 @@ client = discord.Client(intents=intents)
 
 @client.event
 async def on_ready():
-    # ボットが準備完了したときに通知
     print(f'Login as {client.user}.')
-    # Discordログイン後にMySQL接続テストを実行
     await main()
 
 @client.event
@@ -39,10 +37,8 @@ async def on_message(message):
 
     action = command[0]
 
-    # !perm コマンド処理
     if action == 'perm':
         if len(command) < 2:
-            # 引数がない場合は送信者自身の権限を表示
             perm = get_permission(message.author)
             await send.message(str(f"{message.author.display_name} の権限: {perm}"), message)
             return
@@ -93,7 +89,6 @@ async def on_message(message):
                 await present.main(message)
                 return
 
-        # 権限不足または不明なコマンド
         await send.message(str("You do not have permission or the command is invalid."), message)
 
     except Exception as e:
@@ -123,9 +118,6 @@ async def main():
     developer_channnel = await client.fetch_channel(developer_channel_id)
 
     print(f"MySQL configuration path: {mysql_toml_path}")
-
-    # --- ここから追加 ---
-    import os
     if not os.path.exists(mysql_toml_path):
         default_mysql_config = """host = "127.0.0.1"
 user = ""
@@ -135,13 +127,10 @@ database = ""
         with open(mysql_toml_path, "w", encoding="utf-8") as f:
             f.write(default_mysql_config)
         print("mysql.toml が存在しなかったため、デフォルト設定で生成しました。")
-    # --- ここまで追加 ---
 
-    # Load MySQL configuration
     with open(mysql_toml_path, "rb") as f:
         config = tomllib.load(f)
 
-    # Mask password before sending
     config_message = "\n".join([
         f"**{key}**: `{value}`" if key != 'password' else "**password**: `****`"
         for key, value in config.items()
@@ -162,7 +151,6 @@ database = ""
         await send.message(f"MySQL接続エラー: {e}", developer_channnel)
 
 if __name__ == "__main__":
-    # Discordボットを起動
     token_file = Path('token.txt')
     if token_file.exists():
         client.run(token_file.read_text(encoding='utf-8').strip())

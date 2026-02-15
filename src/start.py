@@ -4,7 +4,7 @@ from .util import execute, system_messages, send, create_empty_toml, settings
 from . import status as status_module
 import asyncio
 
-# TOMLファイルの読み込み（存在しない場合は空の table を返す）
+
 def load_servers():
     servers_file = Path(settings['paths']['settings_file'])
     if servers_file.exists():
@@ -88,12 +88,10 @@ async def restart(message, server_name):
     status_val = status_module.read(backend_name)
 
     if status_val == 'running':
-        # Stop the server first
         execute(f'tmux send-keys -t {backend_name} "stop" ENTER')
         execute(f'tmux kill-session -t {backend_name}')
         await asyncio.sleep(2)  # Wait for the server to stop
-
-    # Start the server again
+        
     await server(message, server_name, 'stopped')
 
 async def main(command, message):

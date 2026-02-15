@@ -4,11 +4,9 @@ from .util import send
 
 
 async def command(message, command=None):
-    # 'help' コマンドを処理
     roles = {role.name for role in message.author.roles}
     is_admin = roles & {'admin', 'mod', 'staff'}
 
-    # TOMLファイルからhelpテーブルを読み込む
     toml_path = os.path.join(os.path.dirname(__file__), '../message.toml')
     with open(toml_path, 'rb') as f:
         toml_data = tomllib.load(f)

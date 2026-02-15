@@ -3,16 +3,15 @@ import subprocess
 
 
 def read(server_name):
-    # TMUXセッションに同名があれば'running'、なければ'waiting'を返す
     try:
         result = subprocess.run(f"{settings['paths']['tmux_executable']} list-sessions -F '#S'", shell=True, capture_output=True, text=True)
         sessions = result.stdout.strip().split('\n')
         sessions = [s for s in sessions if s]
         filtered_sessions = [s for s in sessions if s.endswith('_sv')]
         if server_name in filtered_sessions:
-            return 'running'
+            return 'running' # サーバーが実行中
         else:
-            return 'waiting'
+            return 'waiting' # サーバーが実行されていない
     except Exception:
         return None
 
@@ -29,21 +28,17 @@ def tmux_output(session_name, lines=10):
     
 
 async def server(message, server_name, status_val):
-    # 'status' コマンドを処理
     if status_val:
         await send.message(f'{server_name} is {status_val}', message)
     else:
         await send.message(f'Status file for {server_name} not found.', message)
 
 async def list(message):
-    # 'status ls' コマンドを処理
     try:
         result = subprocess.run(f"{settings['paths']['tmux_executable']} list-sessions -F '#S'", shell=True, capture_output=True, text=True)
         sessions = result.stdout.strip().split('\n')
         sessions = [s for s in sessions if s]
         filtered = [s for s in sessions if s.endswith('_sv')]
-
-        # Discord表示用に"_sv"を除去
         display_names = [s[:-3] for s in filtered]
 
         if display_names:

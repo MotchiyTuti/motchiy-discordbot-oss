@@ -9,8 +9,6 @@ class default:
     @staticmethod
     async def script(message, subcommand, args):
         servers_file = Path('/mnt/game/default.toml')
-
-        # TOMLファイルの読み込み（なければ空の table を返す）
         def load_servers():
             if servers_file.exists():
                 with servers_file.open('r', encoding='utf-8') as f:
@@ -19,7 +17,6 @@ class default:
                 create_empty_toml(servers_file)
             return table()
 
-        # TOMLファイルの保存
         def save_servers(servers):
             with servers_file.open('w', encoding='utf-8') as f:
                 f.write(dumps(servers))
@@ -38,7 +35,6 @@ class default:
         elif subcommand == 'add' and args:
             options, server_names_raw = select_option(args)
 
-            # ① オプションから java_version を取得（--java=XX があれば優先）
             java_version = next((opt.split('=', 1)[1] for opt in options if opt.startswith('--java=')), None)
 
             servers = load_servers()
@@ -46,7 +42,6 @@ class default:
 
             server_names = []
             for raw_name in server_names_raw:
-                # ② server名から "-数字" を抽出（例: "serverA-21" → "serverA", java_version="21"）
                 match = re.match(r'(.+)-(\d+)$', raw_name)
                 if match:
                     name, version = match.groups()
@@ -57,7 +52,6 @@ class default:
                     server_names.append(name)
                     version_from_name = None
 
-                # ③ java_version が未指定なら server名から抽出したものを使う
                 effective_version = java_version or version_from_name or 'unknown'
 
                 if name in servers:

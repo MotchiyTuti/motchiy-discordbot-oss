@@ -52,8 +52,8 @@ def hasPermission(member, required_role):
 class send:
     @staticmethod
     async def message(content: str, message: discord.Message) -> None:
-        # 先頭に空行を入れる（ゼロ幅スペースで Discord に消されないようにする）
-        content = "\u200b\n" + content
+        
+        content = "\u200b\n" + content  # 先頭に空行を入れる
 
         print(content)
         if message is None:
@@ -112,19 +112,15 @@ settings = load_settings()
 
 
 async def get_user_input(prompt: str, message: discord.Message) -> str:
-    # ユーザーにプロンプトを送信
     await send.message(prompt, message)
 
     def check(m):
-        # メッセージの送信者とチャンネルを確認
         return m.author == message.author and m.channel == message.channel
 
     try:
-        # Bot インスタンスを取得
         bot = message._state._get_client()
         response = await bot.wait_for('message', check=check, timeout=60.0)
         return response.content
     except asyncio.TimeoutError:
-        # タイムアウト時のエラーメッセージ
         await send.message("タイムアウトしました。もう一度やり直してください。", message)
         return ""
