@@ -9,10 +9,15 @@ servers_file = "/mnt/game/servers.toml"
 download_dir = "/var/www/html/discord-downloads"
 
 # Path to the message TOML file
-message_toml = "message.toml"
+message_toml = "/home/motchiy/discordbot/message.toml"
 
 # Path to the log file
 log_file = "/var/log/discordbot.log"
 
 # Path to the tmux executable
 tmux_executable = "tmux"
+
+mysql_toml = "/home/motchiy/discordbot/mysql.toml"
+
+[channel_ids]
+developer = 1472408964586143744

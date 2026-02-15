@@ -1,9 +1,12 @@
 import discord  # type: ignore
 from src import start, stop
-from src import config, help, status, auth, download
-from src.util import hasPermission, send, get_permission
+from src import config, help, status, auth, download, present
+from src.util import hasPermission, send, get_permission, load_settings
 from pathlib import Path
 import traceback
+import pymysql # type: ignore
+import tomllib  # Ensure tomllib is imported for configuration loading
+import asyncio  # Ensure asyncio is imported for running asynchronous functions
 
 
 # Discordクライアント初期化
@@ -17,8 +20,8 @@ client = discord.Client(intents=intents)
 async def on_ready():
     # ボットが準備完了したときに通知
     print(f'Login as {client.user}.')
-
-
+    # Discordログイン後にMySQL接続テストを実行
+    await main()
 
 @client.event
 async def on_message(message):
@@ -87,6 +90,8 @@ async def on_message(message):
         if hasPermission(message.author, 'admin'):
             if action == 'dsconf':
                 await config.default.main(command, message)
+            if action == 'present':
+                await present.main(message)
                 return
 
         # 権限不足または不明なコマンド
@@ -109,14 +114,58 @@ def run_bot():
         print('Error: token.txt not found.')
 
 
-if __name__ == "__main__":
+async def main():
+    """
+    Check if the MySQL connection can be established and send a message.
+    """
+    settings = load_settings()
+    mysql_toml_path = settings['paths']['mysql_toml']
+    developer_channel_id = settings['channel_ids']['developer']
+    developer_channnel = await client.fetch_channel(developer_channel_id)
+
+    print(f"MySQL configuration path: {mysql_toml_path}")
+
+    # --- ここから追加 ---
+    import os
+    if not os.path.exists(mysql_toml_path):
+        default_mysql_config = """host = "127.0.0.1"
+user = ""
+password = ""
+database = ""
+"""
+        with open(mysql_toml_path, "w", encoding="utf-8") as f:
+            f.write(default_mysql_config)
+        print("mysql.toml が存在しなかったため、デフォルト設定で生成しました。")
+    # --- ここまで追加 ---
+
+    # Load MySQL configuration
+    with open(mysql_toml_path, "rb") as f:
+        config = tomllib.load(f)
+
+    # Mask password before sending
+    config_message = "\n".join([
+        f"**{key}**: `{value}`" if key != 'password' else "**password**: `****`"
+        for key, value in config.items()
+    ])
+    await send.message(f"**Loaded MySQL Configuration:**\n{config_message}", developer_channnel)
+
     try:
-        run_bot()
+        connection = pymysql.connect(
+            host=config["host"],
+            user=config["user"],
+            password=config["password"],
+            database=config["database"],
+            port=config.get("port", 3306)
+        )
+        connection.close()
+        await send.message("MySQLに正常に接続できました。", developer_channnel)
     except Exception as e:
-        tb = traceback.extract_tb(e.__traceback__)
-        if tb:
-            last = tb[-1]
-            file_info = f'File \"{last.filename}\", line {last.lineno}'
-        else:
-            file_info = "No traceback info"
-        print('error_occurred', f'Error: {e}\n{file_info}')
+        await send.message(f"MySQL接続エラー: {e}", developer_channnel)
+
+if __name__ == "__main__":
+    # Discordボットを起動
+    token_file = Path('token.txt')
+    if token_file.exists():
+        client.run(token_file.read_text(encoding='utf-8').strip())
+    else:
+        print('Error: token.txt not found.')

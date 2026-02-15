@@ -4,6 +4,7 @@ import subprocess
 import tomllib
 import random
 import os
+import asyncio
 from typing import Any
 from typing import cast
 import discord  # type: ignore
@@ -51,34 +52,31 @@ def hasPermission(member, required_role):
 class send:
     @staticmethod
     async def message(content: str, message: discord.Message) -> None:
-        # content をコンソールに出力（デバッグ用）
+        # 先頭に空行を入れる（ゼロ幅スペースで Discord に消されないようにする）
+        content = "\u200b\n" + content
+
         print(content)
         if message is None:
             return
 
-        # 出力先を判別：Message オブジェクトなら channel、Channel/その他 send を持つオブジェクトならそれを使う
         target = None
         if hasattr(message, "channel"):
             target = message.channel
         elif hasattr(message, "send"):
             target = message
-        # 一部の Interaction 等で response がある場合の対応
         elif hasattr(message, "response") and hasattr(message.response, "send_message"):
             target = message.response
 
         if target is None:
-            # 送信先が見つからなければログだけ出して終了
             print("No valid target to send message.")
             return
 
-        # Discord のメッセージ最大長（約2000文字）に合わせて分割して送信
         MAX_LEN = 2000
         try:
             for i in range(0, len(content), MAX_LEN):
                 chunk = content[i:i + MAX_LEN]
                 await target.send(chunk)
         except Exception as e:
-            # 送信失敗時はログに出す（必要ならここで再試行や詳細ログを追加）
             print(f"Failed to send message: {e}")
 
 
@@ -98,9 +96,6 @@ def random_path():
 
 
 def create_empty_toml(path: Path):
-    """
-    指定されたパスに空のTOMLファイルを作成or上書きする。
-    """
     empty_data = table()
     with path.open('w', encoding='utf-8') as f:
         f.write(dumps(empty_data))
@@ -114,3 +109,22 @@ def load_settings():
         return parse(f.read())
 
 settings = load_settings()
+
+
+async def get_user_input(prompt: str, message: discord.Message) -> str:
+    # ユーザーにプロンプトを送信
+    await send.message(prompt, message)
+
+    def check(m):
+        # メッセージの送信者とチャンネルを確認
+        return m.author == message.author and m.channel == message.channel
+
+    try:
+        # Bot インスタンスを取得
+        bot = message._state._get_client()
+        response = await bot.wait_for('message', check=check, timeout=60.0)
+        return response.content
+    except asyncio.TimeoutError:
+        # タイムアウト時のエラーメッセージ
+        await send.message("タイムアウトしました。もう一度やり直してください。", message)
+        return ""
