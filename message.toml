@@ -71,6 +71,13 @@ deny = """
 - Example: `!deny player1`
 """
 
+present = """
+**!present**
+- Manage birthday gifts.
+- Example: `!present` (Interactive)
+- Example: `!present Motchiy 0128 Happy Birthday!` (Direct)
+"""
+
 admin_list = """
 **Available commands:**
 - `!start all/<server_name>`: Start servers.
@@ -80,6 +87,9 @@ admin_list = """
 - `!dsconf ls/add/rem <server_name>`: Manage server list.
 - `!help`: Show help.
 - `!help <command>`: Show detailed help for a command.
+- `!allow <username>`: Add user to whitelist.
+- `!deny <username>`: Remove user from whitelist.
+- `!present`: Manage birthday gifts
 """
 
 user_list = """
