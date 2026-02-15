@@ -1,4 +1,4 @@
-from tomlkit import parse, dumps, table #type: ignore
+from tomlkit import parse, dumps, table
 from pathlib import Path
 from .util import send, select_option, create_empty_toml
 from typing import List

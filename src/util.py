@@ -1,5 +1,5 @@
 from pathlib import Path
-from tomlkit import table, dumps, parse #type: ignore
+from tomlkit import table, dumps, parse
 import subprocess
 import tomllib
 import random
@@ -7,7 +7,7 @@ import os
 import asyncio
 from typing import Any
 from typing import cast
-import discord  # type: ignore
+import discord
 
 
 def execute(command):

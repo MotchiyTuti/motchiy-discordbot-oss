@@ -1,5 +1,5 @@
 import tomllib
-import pymysql # type: ignore
+import pymysql
 import asyncio
 import src.date as date
 from datetime import datetime

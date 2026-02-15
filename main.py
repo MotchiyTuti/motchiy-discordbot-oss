@@ -1,9 +1,9 @@
-import discord  # type: ignore
+import discord
 from src import start, stop, status, help, download, auth, config, present
 from src.util import hasPermission, send, get_permission, load_settings
 from pathlib import Path
 import traceback
-import pymysql # type: ignore
+import pymysql
 import tomllib
 import os
 

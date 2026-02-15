@@ -1,5 +1,5 @@
 from pathlib import Path
-from tomlkit import parse, table #type: ignore
+from tomlkit import parse, table
 from .util import execute, system_messages, send, create_empty_toml, settings
 from . import status as status_module
 import asyncio

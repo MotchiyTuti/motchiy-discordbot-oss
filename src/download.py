@@ -1,4 +1,4 @@
-import discord # type: ignore
+import discord
 import zipfile
 from pathlib import Path
 from src.util import send, settings
