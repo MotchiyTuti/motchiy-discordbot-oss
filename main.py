@@ -6,7 +6,6 @@ from pathlib import Path
 import traceback
 import pymysql # type: ignore
 import tomllib  # Ensure tomllib is imported for configuration loading
-import asyncio  # Ensure asyncio is imported for running asynchronous functions
 
 
 # Discordクライアント初期化
