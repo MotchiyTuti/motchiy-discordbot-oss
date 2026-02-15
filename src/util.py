@@ -6,8 +6,14 @@ import random
 import os
 import asyncio
 from typing import Any
+<<<<<<< HEAD
 from typing import cast
 import discord
+=======
+import discord
+from typing import Any, Dict
+
+>>>>>>> 33e69f5 (pathが読み取れないバグを修正)
 
 
 def execute(command):
@@ -51,33 +57,47 @@ def hasPermission(member, required_role):
 
 class send:
     @staticmethod
-    async def message(content: str, message: discord.Message) -> None:
-        
-        content = "\u200b\n" + content  # 先頭に空行を入れる
+    async def message(content: str, message) -> None:
+        # 先頭に確実な空行を入れる
+        content = "\n" + content
 
         print(content)
         if message is None:
             return
 
-        target = None
-        if hasattr(message, "channel"):
-            target = message.channel
-        elif hasattr(message, "send"):
-            target = message
-        elif hasattr(message, "response") and hasattr(message.response, "send_message"):
-            target = message.response
+        # --- 送信先の判定 ---
+        target_send = None
 
-        if target is None:
+        # 1. 通常の Message
+        if isinstance(message, discord.Message):
+            target_send = message.channel.send
+
+        # 2. Interaction
+        elif isinstance(message, discord.Interaction):
+            if not message.response.is_done():
+                # 最初の1回だけ
+                target_send = message.response.send_message
+            else:
+                # 2回目以降は followup
+                target_send = message.followup.send
+
+        # 3. その他 send() を持つオブジェクト
+        elif hasattr(message, "send"):
+            target_send = message.send
+
+        if target_send is None:
             print("No valid target to send message.")
             return
 
+        # --- 2000文字分割送信 ---
         MAX_LEN = 2000
         try:
             for i in range(0, len(content), MAX_LEN):
                 chunk = content[i:i + MAX_LEN]
-                await target.send(chunk)
+                await target_send(chunk)
         except Exception as e:
             print(f"Failed to send message: {e}")
+
 
 
 def select_option(items):
@@ -100,15 +120,81 @@ def create_empty_toml(path: Path):
     with path.open('w', encoding='utf-8') as f:
         f.write(dumps(empty_data))
 
+def unwrap_toml(value):
+    if isinstance(value, dict):
+        return {k: unwrap_toml(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [unwrap_toml(v) for v in value]
+    return value
 
-def load_settings():
-    settings_file = Path("settings.toml")
-    if not settings_file.exists():
-        raise FileNotFoundError("settings.toml not found.")
-    with settings_file.open("r", encoding="utf-8") as f:
-        return parse(f.read())
 
-settings = load_settings()
+class load_settings:
+    _instance = None
+
+    def __new__(cls, settings_path: str = "settings.toml"):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance._load(settings_path)
+        return cls._instance
+
+    def _load(self, settings_path: str):
+        path = Path(settings_path)
+        if not path.exists():
+            raise FileNotFoundError(f"{settings_path} not found.")
+
+        with path.open("r", encoding="utf-8") as f:
+            data = parse(f.read())
+
+        self._settings: Dict[str, Any] = unwrap_toml(data)
+
+    # -----------------------------
+    # 追加：辞書アクセスを可能にする
+    # -----------------------------
+    def __getitem__(self, key: str) -> Any:
+        return self._settings[key]
+
+    # 任意キーを安全に取得
+    def get(self, *keys, default=None):
+        data = self._settings
+        for key in keys:
+            if key not in data:
+                return default
+            data = data[key]
+        return data
+
+    # -----------------------------
+    # 値取得メソッド
+    # -----------------------------
+    def server_base_dir(self) -> str:
+        return self._settings["paths"]["server_base_dir"]
+
+    def servers_file(self) -> str:
+        return self._settings["paths"]["servers_file"]
+
+    def download_dir(self) -> str:
+        return self._settings["paths"]["download_dir"]
+
+    def message_toml(self) -> str:
+        return self._settings["paths"]["message_toml"]
+
+    def log_file(self) -> str:
+        return self._settings["paths"]["log_file"]
+
+    def tmux_executable(self) -> str:
+        return self._settings["paths"]["tmux_executable"]
+
+    def mysql_toml(self) -> str:
+        return self._settings["paths"]["mysql_toml"]
+
+    def developer_channel_id(self) -> int:
+        return self._settings["channel_ids"]["developer"]
+
+
+settings = load_settings()  # グローバルインスタンス
+
+    # -----------------------------
+    # ここで設定読み込み部分終了
+    # -----------------------------
 
 
 async def get_user_input(prompt: str, message: discord.Message) -> str:

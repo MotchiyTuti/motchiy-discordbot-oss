@@ -3,9 +3,7 @@ import pymysql
 import asyncio
 import src.date as date
 from datetime import datetime
-from src.util import get_user_input, send, load_settings
-
-settings = load_settings()
+from src.util import get_user_input, send, settings
 
 mysql_toml_path = settings['paths']['mysql_toml']
 with open(mysql_toml_path, "rb") as f:

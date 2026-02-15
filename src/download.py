@@ -1,7 +1,7 @@
 import discord
 import zipfile
 from pathlib import Path
-from src.util import send, settings
+from .util import send, settings
 
 async def main(command, message):
     if len(command) < 2:
