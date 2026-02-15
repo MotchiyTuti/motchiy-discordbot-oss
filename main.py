@@ -1,6 +1,5 @@
 import discord  # type: ignore
-from src import start, stop
-from src import config, help, status, auth, download, present
+from src import start, stop, status, help, download, auth, config, present
 from src.util import hasPermission, send, get_permission, load_settings
 from pathlib import Path
 import traceback
