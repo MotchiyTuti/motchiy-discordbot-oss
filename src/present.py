@@ -1,6 +1,7 @@
 import tomllib
 import pymysql # type: ignore
 import asyncio
+import src.date as date
 from datetime import datetime
 from src.util import get_user_input, send, load_settings
 
@@ -163,10 +164,11 @@ async def main(message):
             update_or_insert_birthday_present(
                 connection,
                 name=name,
-                birthday=birthday,
+                birthday=date.future(birthday),
                 amount=int(amount),
                 request=request
             )
         finally:
             connection.close()
         await send.message("データベースが正常に更新されました。", message)
+        await send.message(f"名前: {name}, 誕生日: {birthday}, 金額: {amount}, リクエスト: {request}", message)
