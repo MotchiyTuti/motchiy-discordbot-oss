@@ -79,6 +79,9 @@ async def on_message(message):
             elif action == 'deny':
                 await auth.deny(message, *command[1:])
                 return
+            elif action == 'restart':
+                await start.restart(message, *command[1:])
+                return
 
         # admin commands
         if hasPermission(message.author, 'admin'):
