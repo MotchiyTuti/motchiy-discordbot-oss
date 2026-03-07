@@ -115,6 +115,26 @@ async def all(message):
 
 
 async def restart(message, server_name):
+    if server_name == "all":
+        servers = load_servers()
+
+        if not servers:
+            await send.message("servers.toml にサーバーがありません。", message)
+            return
+
+        for name in servers:
+            backend_name = f"{name}_sv"
+            status_val = status_module.read(backend_name)
+
+            if status_val == 'running':
+                execute(f'tmux send-keys -t {backend_name} "stop" ENTER')
+                await asyncio.sleep(3)
+                execute(f'tmux kill-session -t {backend_name}')
+            await server(message, name, 'stopped')
+
+        await send.message("すべてのサーバーを再起動しました。", message)
+        return
+
     backend_name = f"{server_name}_sv"
     status_val = status_module.read(backend_name)
 

@@ -6,14 +6,10 @@ import random
 import os
 import asyncio
 from typing import Any
-<<<<<<< HEAD
 from typing import cast
 import discord
-=======
 import discord
 from typing import Any, Dict
-
->>>>>>> 33e69f5 (pathが読み取れないバグを修正)
 
 
 def execute(command):
