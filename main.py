@@ -85,7 +85,7 @@ async def on_message(message):
 
         # admin commands
         if hasPermission(message.author, 'admin'):
-            if action == 'dsconf':
+            if action == 'startup':
                 await config.default.main(command, message)
             if action == 'present':
                 await present.main(message)

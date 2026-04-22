@@ -1,7 +1,7 @@
 #!/bin/bash
 sudo apt update -y
 sudo apt upgrade -y
-sudo apt install python3 python3-venv tmux
+sudo apt install python3 python3-venv tmux -y
 
 
 python3 -m venv .venv
